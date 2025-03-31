@@ -18,7 +18,7 @@ export default function CreateEventScreen() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const colors = [
-    '#edd4ce', '#ceedde', '#e38699', '#e386e0', '#8692e3', '#86bbe3', '#e3ab86','#d5e386', '#ebe98d', '#e86d6d', '#e8b36d'
+    '#f3f4f6', '#edd4ce', '#ceedde', '#e38699', '#e386e0', '#8692e3', '#86bbe3', '#e3ab86','#d5e386', '#ebe98d', '#e86d6d', '#e8b36d'
   ];
   const handleColorSelect = (color: string) => {
     setFormData({ ...formData, color });

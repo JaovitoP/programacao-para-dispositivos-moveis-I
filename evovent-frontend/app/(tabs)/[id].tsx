@@ -34,14 +34,15 @@ export default function EventDetailsScreen() {
     try {
       const result = await Share.share({
         title: event?.name || 'Evento',
-        message: `Confira o evento: ${event?.name || 'Evento'}
+        message: `Olá, Venho te convidar para um evento!🎉\nVocê não pode perder a oportunidade participar! Confira: \n ${event?.name || 'Evento'}
         \nData: ${event ? format(new Date(event.date), 'EEEE, MMMM d, yyyy h:mm a') : 'Data indisponível'}
         \nLocal: ${event?.location || 'Local indisponível'}
-        \nDescrição: ${event?.description || 'Descrição indisponível'}`,
+        \nDescrição: ${event?.description || 'Descrição indisponível'}
+        \nNão deixe de marcar na sua agenda, será uma experiência imperdível! E, claro, sinta-se à vontade para compartilhar com seus amigos. Quanto mais, melhor!😄\nNos vemos lá!`,
         url: event?.image || '',
       }, {
         dialogTitle: 'Compartilhar evento',
-        subject: `Detalhes do evento: ${event?.name || 'Evento'}`, // Para email
+        subject: `Detalhes do evento: ${event?.name || 'Evento'}`,
       });
   
       if (result.action === Share.sharedAction) {
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
   description: {
     fontFamily: 'Inter_400Regular',
     fontSize: 16,
-    color: '#374151',
+    color: '#000000',
     lineHeight: 24,
   },
   mapContainer: {
