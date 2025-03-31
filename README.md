@@ -5,9 +5,7 @@ O Evovent consiste em uma aplicação mobile para gerenciamento de diferentes ti
 
 <h4 align="left">
  <a href="https://www.typescriptlang.org/" target="_blank"><img src="https://img.shields.io/badge/TypeScript-2f74c0?style=for-the-badge&logo=TypeScript&logoColor=white" alt ='TypeScript'target="_blank"></a>
- <a href="https://nextjs.org/" target="_blank"><img src="https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white" alt='NextJS' target="_blank"></a>
  <a href="https://nodejs.org/pt-br" target="_blank"><img src="https://img.shields.io/badge/-Node-57a746?style=for-the-badge&logo=nodedotjs&logoColor=white" alt='NodeJS' target="_blank"></a>
- <a href="https://tailwindcss.com/" target="_blank"><img src="https://img.shields.io/badge/tailwind-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white" alt='TailwindCSS' target="_blank"></a>
 </h4>
 
 ## Product Backlog
