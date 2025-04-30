@@ -1,71 +1,37 @@
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const User = require('../models/userModel');
+const jwt = require('jsonwebtoken');
+const db = require('../database'); // seu pool de conexão
+const JWT_SECRET = process.env.JWT_SECRET || 'segredo_super_secreto';
 
-// Função de registro
-exports.register = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    // Verifica se usuário já existe
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-    
-    // Hash da senha
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // Cria usuário
-    const user = new User({ email, password: hashedPassword });
-    await user.save();
-    
-    res.status(201).json({ message: 'User created successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error registering user', error: error.message });
-  }
-};
+exports.auth = async (req, res) => {
+  const { email, password } = req.body;
 
-// Função de login
-exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    
-    // Encontra usuário
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+    const pool = await db;
+
+    // Busca o usuário pelo email
+    const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+
+    if (users.length === 0) {
+      return res.status(400).json({ msg: 'Usuário não encontrado' });
     }
-    
-    // Verifica senha
+
+    const user = users[0];
+
+    // Compara a senha com o hash do banco
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ msg: 'Senha inválida' });
     }
-    
-    // Cria token JWT
-    const token = jwt.sign(
-      { id: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-    
-    res.json({ token });
-  } catch (error) {
-    res.status(500).json({ message: 'Error logging in', error: error.message });
-  }
-};
 
-// Middleware de autenticação (pode ser movido para um arquivo separado se preferir)
-exports.authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token) return res.sendStatus(401);
-  
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
+    // Gera o token JWT
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: '7d',
+    });
+
+    res.json({ token });
+  } catch (err) {
+    console.error('Erro no login:', err);
+    res.status(500).json({ msg: 'Erro no servidor' });
+  }
 };
