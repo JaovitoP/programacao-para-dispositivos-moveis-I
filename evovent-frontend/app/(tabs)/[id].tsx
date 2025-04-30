@@ -126,18 +126,19 @@ export default function EventDetailsScreen() {
           <Text style={styles.description}>{event.description || 'Não há descrições'}</Text>
         </View>
 
-        {/* <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Location</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Localização</Text>
           <View style={styles.mapContainer}>
             <View style={styles.mapPlaceholder}>
               <MapPin size={32} color="#6366f1" />
               <Text style={styles.mapPlaceholderText}>
-                Map integration requires a Google Maps API key
+                Google Maps API
               </Text>
             </View>
           </View>
-        </View> */}
+        </View>
       </View>
+      
     </ScrollView>
   );
 }

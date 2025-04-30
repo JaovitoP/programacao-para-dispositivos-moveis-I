@@ -29,7 +29,7 @@ export default function CalendarScreen() {
       console.error(err);
     } finally {
       setLoading(false);
-      setRefreshing(false); // Finaliza o estado de refreshing
+      setRefreshing(false);
     }
   };
 
@@ -38,7 +38,7 @@ export default function CalendarScreen() {
     loadEvents();
   };
 
-  // Atualiza sempre que a tela recebe foco
+
   useFocusEffect(
     useCallback(() => {
       loadEvents();
@@ -64,7 +64,7 @@ export default function CalendarScreen() {
   return (
     <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <View style={styles.header}>
-        <Text style={styles.title}>Calendar</Text>
+        <Text style={styles.title}>Calendário</Text>
       </View>
 
       {events.map((day) => (

@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
 const eventRoutes = require('./routes/events');
 require('dotenv').config();

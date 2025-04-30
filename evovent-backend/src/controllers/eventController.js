@@ -19,16 +19,16 @@ exports.getEventById = async (req, res) => {
       return res.status(404).json({ message: 'Evento não encontrado' });
     }
 
-    // Formata os dados para o frontend
+
     const eventData = {
       id: event.id,
       name: event.name,
       description: event.description,
-      date: event.date, // ou combine date + time se necessário
-      time: event.time, // apenas se seu frontend precisar separado
+      date: event.date,
+      time: event.time, 
       location: event.location,
       status: event.status,
-      color: event.color || '#6366f1', // valor padrão
+      color: event.color || '#6366f1',
       category: event.category,
       createdAt: event.created_at
     };

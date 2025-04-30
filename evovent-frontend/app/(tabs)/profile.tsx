@@ -28,7 +28,7 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Profile</Text>
+        <Text style={styles.title}>Meu Perfil</Text>
       </View>
 
       <View style={styles.profile}>
@@ -37,15 +37,15 @@ export default function ProfileScreen() {
           style={styles.avatar}
         />
         <Text style={styles.name}>John Doe</Text>
-        <Text style={styles.email}>john.doe@example.com</Text>
+        <Text style={styles.email}>john.doe@email.com</Text>
         <View style={styles.stats}>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>12</Text>
-            <Text style={styles.statLabel}>Events Criados</Text>
+            <Text style={styles.statLabel}>Eventos Criados</Text>
           </View>
           <View style={[styles.statItem]}>
             <Text style={styles.statNumber}>48</Text>
-            <Text style={styles.statLabel}>Events Comparecidos</Text>
+            <Text style={styles.statLabel}>Eventos Comparecidos</Text>
           </View>
         </View>
       </View>

@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { Link, useFocusEffect } from 'expo-router';
 import api from '@/app/api/client';
 import React, { useState, useCallback } from 'react';
+import CustomHeader from './customHeader';
 
 interface Event {
   id: string;
@@ -71,9 +72,13 @@ useFocusEffect(
 
   return (
     <ScrollView style={styles.container}>
+      <CustomHeader 
+        userName="João Silva" 
+        userPhoto="https://example.com/profile.jpg" 
+      />
       <View style={styles.header}>
         <Text style={styles.greeting}>Olá, John!</Text>
-        <Text style={styles.title}>Próximos Eventos</Text>
+        <Text style={styles.title}>Evovent | Próximos Eventos</Text>
       </View>
 
       {events.map((event) => (

@@ -1,53 +1,48 @@
-import { Tabs } from 'expo-router';
-import { Calendar, Home, PlusCircle, User, PartyPopper } from 'lucide-react-native'; // Importando o ícone PartyPopper
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { Button, ActivityIndicator, View } from 'react-native';
+import HomeScreen from './index';
+import LoginScreen from './login';
+import DetailsScreen from './[id]';  // Crie esses componentes
+import CalendarScreen from './calendar';
+import CreateScreen from './create';
+import ProfileScreen from './profile';
 
-export default function TabLayout() {
+const Stack = createNativeStackNavigator();
+
+export default function App() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopColor: '#e5e5e5',
-        },
-        tabBarActiveTintColor: '#6366f1',
-        tabBarInactiveTintColor: '#6b7280',
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
-        }}
-      />
-        <Tabs.Screen
-          name="[id]"
-          options={{
-            title: 'Evento',
-            tabBarIcon: ({ color, size }) => <PartyPopper size={size} color={color} />, // Usando PartyPopper para evento
-          }}
-        />
-      <Tabs.Screen
-        name="calendar"
-        options={{
-          title: 'Calendar',
-          tabBarIcon: ({ color, size }) => <Calendar size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="create"
-        options={{
-          title: 'Create',
-          tabBarIcon: ({ color, size }) => <PlusCircle size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
-        }}
-      />
-    </Tabs>
+    <AuthProvider>
+      <AppNavigation />
+    </AuthProvider>
+  );
+}
+
+function AppNavigation() {
+  const { authState, onLogout } = useAuth();
+
+  return (
+      <Stack.Navigator>
+        {authState?.authenticated ? (
+          <>
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={{
+                headerRight: () => <Button onPress={onLogout} title="Sair" />
+              }}
+            />
+            <Stack.Screen name="Details" component={DetailsScreen} />
+            <Stack.Screen name="Calendar" component={CalendarScreen} />
+            <Stack.Screen name="Create" component={CreateScreen} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
+          </>
+        ) : (
+          <Stack.Screen name="Login" component={LoginScreen} options={{
+            headerShown: false
+          }} />
+        )}
+      </Stack.Navigator>
   );
 }
