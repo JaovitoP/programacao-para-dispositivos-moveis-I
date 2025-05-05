@@ -4,10 +4,13 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { Button, ActivityIndicator, View } from 'react-native';
 import HomeScreen from './index';
 import LoginScreen from './login';
-import DetailsScreen from './[id]';  // Crie esses componentes
+import RegisterScreen from './register';
+import DetailsScreen from './[id]';
 import CalendarScreen from './calendar';
 import CreateScreen from './create';
 import ProfileScreen from './profile';
+import MyEventsScreen from './myevents';
+import Tabs from '../components/tabs';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,22 +29,33 @@ function AppNavigation() {
       <Stack.Navigator>
         {authState?.authenticated ? (
           <>
+          <Stack.Screen name="MainTabs" component={Tabs} options={{ headerShown: false }} />
             <Stack.Screen
               name="Home"
               component={HomeScreen}
               options={{
-                headerRight: () => <Button onPress={onLogout} title="Sair" />
+                headerShown: false
               }}
             />
-            <Stack.Screen name="Details" component={DetailsScreen} />
+            <Stack.Screen name="Details" component={DetailsScreen} options={{
+            title: "Detalhes do evento",
+          }}/>
             <Stack.Screen name="Calendar" component={CalendarScreen} />
-            <Stack.Screen name="Create" component={CreateScreen} />
+            <Stack.Screen name="Create" component={CreateScreen} options={{ title: "Novo evento" }}/>
             <Stack.Screen name="Profile" component={ProfileScreen} />
+            <Stack.Screen name="MyEvents" component={MyEventsScreen} options={{
+            title: "Reservas feitas",
+          }}/>
           </>
         ) : (
+          <>
           <Stack.Screen name="Login" component={LoginScreen} options={{
             headerShown: false
           }} />
+          <Stack.Screen name="Register" component={RegisterScreen} options={{
+            headerShown: false
+          }} />
+          </>
         )}
       </Stack.Navigator>
   );

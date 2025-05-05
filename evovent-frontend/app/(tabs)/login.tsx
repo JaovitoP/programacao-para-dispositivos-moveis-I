@@ -4,8 +4,10 @@ import { Link, useRouter } from "expo-router";
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
 import { API_URL, useAuth } from '@/context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 
 const Login = () => {
+  const navigation = useNavigation();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,6 +42,9 @@ const Login = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.logoContainer}>
+      <Image style={styles.logo} source={require('../../assets/images/icon.png')} />
+      </View>
     <View style={styles.content}>
       <TextInput 
         style={styles.input}
@@ -52,22 +57,50 @@ const Login = () => {
         secureTextEntry 
         onChangeText={setPassword} 
       />
-      <Button 
+      <TouchableOpacity 
         onPress={login} 
-        title="Sign In"
+        style={[styles.button, styles.signInButton, isLoading && styles.disabledButton]}
         disabled={isLoading}
-      />
-      <Button 
-        onPress={register} 
-        title="Create Account"
-        disabled={isLoading}
-      />
+      >
+        <Text style={styles.buttonText}>Entrar</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.registerContainer}>
+        <Text style={styles.registerText}>
+          Já tem uma conta? <Text style={styles.registerLink}>Faça seu cadastro</Text>
+        </Text>
+      </TouchableOpacity>
     </View>
   </View>
   )
 };
 
 const styles = StyleSheet.create({
+  button: {
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  signInButton: {
+    backgroundColor: '#006147', // Verde
+  },
+  createAccountButton: {
+    backgroundColor: '#2196F3', // Azul
+  },
+  disabledButton: {
+    backgroundColor: '#CCCCCC', // Cinza quando desativado
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",
@@ -78,11 +111,11 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 10,
   },
   logo: {
-    width: 120,
-    height: 120,
+    width: 180,
+    height: 180,
     marginBottom: 20,
   },
   title: {
@@ -127,13 +160,9 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
-  disabledButton: {
-    backgroundColor: '#aaa',
-  },
   loginButtonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
   },
   forgotPassword: {
     alignSelf: 'flex-end',
@@ -150,12 +179,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   registerText: {
+    marginTop: 20,
+    textAlign: 'center',
     color: '#666',
-    fontSize: 14,
   },
   registerLink: {
-    color: '#6C63FF',
-    fontSize: 14,
+    color: '#006147',
   },
 });
 

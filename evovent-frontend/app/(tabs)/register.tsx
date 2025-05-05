@@ -5,133 +5,57 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { api } from '@/app/api/client';
+import { useAuth } from '@/context/AuthContext';
 
-const API_URL = api;
 const RegisterScreen = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-
-  const handleChange = (name: string, value: string) => {
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
-
-  const validateForm = () => {
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      Alert.alert('Erro', 'Preencha todos os campos');
-      return false;
+  const { onLogin, onRegister } = useAuth();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const login = async () => {
+    const result = await onLogin!(email, password);
+    if (result && result.error){
+      alert(result.msg);
     }
+  }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      Alert.alert('Erro', 'Digite um e-mail válido');
-      return false;
+  const register = async () => {
+    const result = await onRegister!(name,email,password);
+    if (result && result.error) {
+      alert(result.msg);
+    } else {
+      login();
     }
-
-    if (formData.password.length < 6) {
-      Alert.alert('Erro', 'A senha deve ter pelo menos 6 caracteres');
-      return false;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Erro', 'As senhas não coincidem');
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleRegister = async () => {
-    if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-      const response = await axios.post(`${API_URL}/register`, {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password
-      });
-
-      // Opcional: Login automático após registro
-      const loginResponse = await axios.post(`${API_URL}/login`, {
-        email: formData.email,
-        password: formData.password
-      });
-
-      await AsyncStorage.setItem('token', loginResponse.data.token);
-      
-      Alert.alert('Sucesso', 'Cadastro realizado com sucesso!', [
-        { text: 'OK', onPress: () => router.push('/index') }
-      ]);
-    } catch (error) {
-      let errorMessage = 'Erro ao cadastrar';
-      if (axios.isAxiosError(error) && error.response) {
-        if (error.response.status === 400) {
-          errorMessage = error.response.data.message || 'E-mail já cadastrado';
-        } else {
-          errorMessage = `Erro: ${error.response.status}`;
-        }
-      }
-      Alert.alert('Erro', errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Criar conta</Text>
-      
-      <TextInput
+      <TextInput 
         style={styles.input}
-        placeholder="Nome completo"
-        value={formData.name}
-        onChangeText={(text) => handleChange('name', text)}
-        autoCapitalize="words"
+        placeholder="Nome" 
+        onChangeText={setName} 
       />
-      
-      <TextInput
+      <TextInput 
         style={styles.input}
-        placeholder="E-mail"
-        value={formData.email}
-        onChangeText={(text) => handleChange('email', text)}
-        keyboardType="email-address"
-        autoCapitalize="none"
+        placeholder="Email" 
+        onChangeText={setEmail} 
       />
-      
-      <TextInput
+      <TextInput 
         style={styles.input}
-        placeholder="Senha (mínimo 6 caracteres)"
-        value={formData.password}
-        onChangeText={(text) => handleChange('password', text)}
-        secureTextEntry
+        placeholder="Password" 
+        secureTextEntry 
+        onChangeText={setPassword} 
       />
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Confirmar senha"
-        value={formData.confirmPassword}
-        onChangeText={(text) => handleChange('confirmPassword', text)}
-        secureTextEntry
-      />
-      
       <TouchableOpacity 
-        style={styles.button} 
-        onPress={handleRegister}
-        disabled={loading}
+        onPress={register} 
+        style={[styles.button, styles.signInButton, isLoading && styles.disabledButton]}
+        disabled={isLoading}
       >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Cadastrar</Text>
-        )}
+        <Text style={styles.buttonText}>Cadastrar</Text>
       </TouchableOpacity>
       
       <TouchableOpacity onPress={() => router.push('/login')}>
@@ -167,18 +91,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: 16,
   },
+  signInButton: {
+    backgroundColor: '#006147', // Verde
+  },
   button: {
     height: 50,
-    backgroundColor: '#4285f4',
+    backgroundColor: '#006147',
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
   },
+  disabledButton: {
+    backgroundColor: '#CCCCCC', // Cinza quando desativado
+  },
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
   },
   loginText: {
     marginTop: 20,
@@ -186,7 +115,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   loginLink: {
-    color: '#4285f4',
+    color: '#006147',
     fontWeight: 'bold',
   },
 });

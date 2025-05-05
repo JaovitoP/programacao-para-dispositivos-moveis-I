@@ -1,0 +1,24 @@
+{
+    "translation": {
+        "Bem-Vindo": "Welcome",
+        "Meu Perfil": "My Profile",
+        "Sair": "Log out",
+        "Próximos Eventos": "Upcoming Events",
+        "Novo Evento": "New Event",
+        "Buscar Eventos": "Search Events",
+        "Nome do Evento": "Event Name",
+        "Data": "Date",
+        "Hora": "Hour",
+        "Eventos": "Events",
+        "Imagem do Evento": "Event Image",
+        "Localização": "Location",
+        "Categoria": "Category",
+        "Cor do Evento": "Event Color",
+        "Quantidade de ingressos": "Number of Tickets",
+        "Descrição": "Description",
+        "Criar Evento": "Create Event",
+        "Meus Eventos": "My Events",
+        "Minhas Reservas": "My Reservations"
+
+    }
+  }

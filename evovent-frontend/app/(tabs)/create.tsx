@@ -1,11 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Calendar, Clock, MapPin, Image as ImageIcon, Tag, Palette } from 'lucide-react-native';
-import { Image } from 'react-native'; // Adicione esta linha
+import { Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import api from '@/app/api/client';
 import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from '@/context/AuthContext';
+import { t } from 'i18next';
+
 export default function CreateEventScreen() {
+  const { authState } = useAuth();
+    useEffect(() => {
+      if (authState?.authenticated && authState.user) {
+        console.log('ID do usuário:', authState.user.id);
+        console.log('Dados completos do usuário:', authState.user);
+      }
+    }, [authState]);
+    
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
@@ -16,7 +27,12 @@ export default function CreateEventScreen() {
     category: '',
     color: '#f3f4f6',
     image: null as string | null,
-    prices: [{ value: '', description: '' }]
+    producer_id: '',
+    ticket: { 
+      type: 'Gratuito',
+      amount: 0, 
+      price: 0 
+    },
   });
 
   const pickImage = async () => {
@@ -38,24 +54,14 @@ export default function CreateEventScreen() {
     }
   };
 
-  const handlePriceChange = (index: number, field: string, value: string) => {
-    const updatedPrices = [...formData.prices];
-    updatedPrices[index] = { ...updatedPrices[index], [field]: value };
-    setFormData({ ...formData, prices: updatedPrices });
-  };
-  
-  const addPriceField = () => {
-    setFormData({
-      ...formData,
-      prices: [...formData.prices, { value: '', description: '' }]
+  const handleTicketChange = (field: string, value: string) => {
+    setFormData({ 
+      ...formData, 
+      ticket: { 
+        ...formData.ticket, 
+        [field]: field === 'price' || field === 'amount' ? Number(value) || 0 : value 
+      } 
     });
-  };
-  
-  const removePriceField = (index: number) => {
-    if (formData.prices.length > 1) {
-      const updatedPrices = formData.prices.filter((_, i) => i !== index);
-      setFormData({ ...formData, prices: updatedPrices });
-    }
   };
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,49 +80,69 @@ export default function CreateEventScreen() {
   };
 
   const handleSubmit = async () => {
-    // Verificação dos campos obrigatórios
     if (!formData.name || !formData.date || !formData.time) {
       Alert.alert('Erro', 'Preencha pelo menos nome, data e hora do evento');
       return;
     }
   
-    // Validação dos preços
-    const invalidPrices = formData.prices.some(price => {
-      return price.value && !/^\d+(\.\d{1,2})?$/.test(price.value);
-    });
-  
-    if (invalidPrices) {
+    if (formData.ticket.price && !/^\d+(\.\d{1,2})?$/.test(formData.ticket.price.toString())) {
       Alert.alert('Erro', 'Formato de preço inválido. Use números com até 2 casas decimais.');
       return;
     }
   
     try {
       setIsSubmitting(true);
-      
-      const eventData = {
-        name: formData.name,
-        description: formData.description || null,
-        date: `${formData.date}`,
-        time: `${formData.time}`,
-        location: formData.location || null,
-        category: formData.category || null,
-        color: formData.color,
-        status: "active",
-        prices: formData.prices
-          .filter(price => price.value) // Filtra preços vazios
-          .map(price => ({
-            value: parseFloat(price.value),
-            description: price.description || 'Ingresso'
-          }))
+  
+      const formDataToSend = new FormData();
+  
+      // Adiciona todos os campos do evento ao FormData
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description || '');
+      formDataToSend.append('date', formData.date);
+      formDataToSend.append('time', formData.time);
+      formDataToSend.append('location', formData.location || '');
+      formDataToSend.append('category', formData.category || '');
+      formDataToSend.append('color', formData.color);
+      formDataToSend.append('status', 'active');
+      formDataToSend.append('producer_id', authState.user.id);
+  
+      // Adiciona a imagem se existir
+      if (formData.image) {
+        const localUri = formData.image;
+        const filename = localUri.split('/').pop() || 'image.jpg';
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : 'image/jpeg';
+        
+        formDataToSend.append('image', {
+          uri: localUri,
+          name: filename,
+          type,
+        } as any);
+      }
+  
+      // Envia tudo em uma única requisição
+      const eventResponse = await api.createEvent(formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
+      const eventId = eventResponse.data.id;
+  
+      // Criar ticket gratuito
+      const ticketData = {
+        type: 'Gratuito',
+        status: 'active',
+        amount: Number(formData.ticket.amount) || 0,
+        price: 0,
+        event_id: eventId,
       };
   
-      console.log(eventData);
-      const response = await api.createEvent(eventData);
+      await api.createTicket(eventId, ticketData);
+  
+      Alert.alert('Sucesso', 'Evento criado com sucesso!');
+      router.back();
       
-      if (response.status === 201) {
-        Alert.alert('Sucesso', 'Evento criado com sucesso!');
-        router.back();
-      }
     } catch (error) {
       console.error('Erro ao criar evento:', error);
       Alert.alert('Erro', 'Não foi possível criar o evento');
@@ -131,23 +157,23 @@ export default function CreateEventScreen() {
         <Text style={styles.title}>Criar Evento</Text>
       </View>
       <View style={styles.inputGroup}>
-  <Text style={styles.label}>Imagem do Evento</Text>
-  
-  <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-    {formData.image ? (
-      <Image source={{ uri: formData.image }} style={styles.imagePreview} />
-    ) : (
-      <View style={styles.imagePlaceholder}>
-        <ImageIcon size={24} color="#6b7280" />
-        <Text style={styles.imagePlaceholderText}>Selecione uma imagem</Text>
+        <Text style={styles.label}>Imagem do Evento</Text>
+        
+        <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+          {formData.image ? (
+            <Image source={{ uri: formData.image }} style={styles.imagePreview} />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <ImageIcon size={24} color="#6b7280" />
+              <Text style={styles.imagePlaceholderText}>Selecione uma imagem</Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
-    )}
-  </TouchableOpacity>
-</View>
 
       <View style={styles.form}>
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Nome do Evento*</Text>
+          <Text style={styles.label}>{t('Nome do Evento')}*</Text>
           <TextInput
             style={styles.input}
             value={formData.name}
@@ -158,7 +184,7 @@ export default function CreateEventScreen() {
 
         <View style={styles.row}>
           <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-            <Text style={styles.label}>Data*</Text>
+            <Text style={styles.label}>{t('Data')}*</Text>
             <View style={styles.iconInput}>
               <Calendar size={20} color="#6b7280" />
               <TextInput
@@ -171,7 +197,7 @@ export default function CreateEventScreen() {
           </View>
 
           <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-            <Text style={styles.label}>Hora*</Text>
+            <Text style={styles.label}>{t('Hora')}*</Text>
             <View style={styles.iconInput}>
               <Clock size={20} color="#6b7280" />
               <TextInput
@@ -185,7 +211,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Localização</Text>
+          <Text style={styles.label}>{t('Localização')}</Text>
           <View style={styles.iconInput}>
             <MapPin size={20} color="#6b7280" />
             <TextInput
@@ -198,7 +224,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Categoria</Text>
+          <Text style={styles.label}>{t('Categoria')}</Text>
           <View style={styles.iconInput}>
             <Tag size={20} color="#6b7280" />
             <TextInput
@@ -211,7 +237,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Cor do Evento</Text>
+          <Text style={styles.label}>{t('Cor do Evento')}</Text>
           <View style={styles.iconInput}>
             <Palette size={20} color="#6b7280" />
             <TextInput
@@ -235,7 +261,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Descrição</Text>
+          <Text style={styles.label}>{t('Descrição')}</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
             value={formData.description}
@@ -248,48 +274,20 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-  <Text style={styles.label}>Preços</Text>
-  
-  {formData.prices.map((price, index) => (
-    <View key={index} style={styles.priceRow}>
-      <View style={[styles.iconInput, { flex: 1, marginRight: 8 }]}>
-        <Text style={styles.currencySymbol}>R$</Text>
-        <TextInput
-          style={styles.priceInput}
-          value={price.value}
-          onChangeText={(text) => handlePriceChange(index, 'value', text)}
-          placeholder="Valor"
-          keyboardType="numeric"
-        />
-      </View>
-
-      <View style={[styles.iconInput, { flex: 2, marginLeft: 8 }]}>
-        <TextInput
-          style={styles.iconInputText}
-          value={price.description}
-          onChangeText={(text) => handlePriceChange(index, 'description', text)}
-          placeholder="Descrição (ex: Inteira, Meia)"
-        />
-      </View>
-
-      {formData.prices.length > 1 && (
-        <TouchableOpacity 
-          style={styles.removePriceButton}
-          onPress={() => removePriceField(index)}
-        >
-          <Text style={styles.removePriceButtonText}>×</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  ))}
-
-  <TouchableOpacity 
-    style={styles.addPriceButton}
-    onPress={addPriceField}
-  >
-    <Text style={styles.addPriceButtonText}>+ Adicionar outro preço</Text>
-  </TouchableOpacity>
-</View>
+          <Text style={styles.label}>{t('Quantidade de ingressos')}</Text>
+          
+          <View style={styles.priceRow}>
+            <View style={[styles.iconInput, { flex: 1 }]}>
+              <TextInput
+                style={styles.iconInputText}
+                value={formData.ticket.amount.toString()}
+                onChangeText={(text) => handleTicketChange('amount', text)}
+                placeholder="Quantidade"
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+        </View>
 
         <TouchableOpacity 
           style={[styles.submitButton, { backgroundColor: '#6366f1' }, isSubmitting && styles.submitButtonDisabled]} 
@@ -378,7 +376,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 16,
   },
-
   colorOptions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -392,7 +389,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   priceRow: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     marginBottom: 12,
   },
@@ -405,30 +402,6 @@ const styles = StyleSheet.create({
   currencySymbol: {
     fontFamily: 'Inter_500Medium',
     color: '#6b7280',
-  },
-  addPriceButton: {
-    marginTop: 8,
-    padding: 8,
-    alignItems: 'center',
-  },
-  addPriceButtonText: {
-    color: '#6366f1',
-    fontFamily: 'Inter_500Medium',
-  },
-  removePriceButton: {
-    marginLeft: 8,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#fee2e2',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removePriceButtonText: {
-    color: '#ef4444',
-    fontSize: 18,
-    fontWeight: 'bold',
-    lineHeight: 20,
   },
   imagePicker: {
     backgroundColor: '#ffffff',

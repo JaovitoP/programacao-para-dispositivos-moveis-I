@@ -1,57 +1,82 @@
-const poolPromise = require('../config/database');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
-const Event = {
-  getAll: async () => {
-    const pool = await poolPromise;
-    const [rows] = await pool.query('SELECT * FROM events');
-    return rows;
+const Event = sequelize.define('Event', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+    allowNull: false,
   },
-  
-  getById : async (id) => {
-    const pool = await poolPromise;
-    try {
-      const [rows] = await pool.query(`
-        SELECT 
-          id, name, description, date, time, location, status, color, category, created_at
-        FROM events 
-        WHERE id = ?
-      `, [id]);
-  
-      if (rows.length === 0) {
-        return null;
-      }
-  
-      return rows[0];
-    } catch (err) {
-      throw err;
-    }
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
+  description: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  date: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  time: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  location: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  status: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  color: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  category: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  image: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  producer_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL',
+  },
+  created_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+  },
+}, {
+  tableName: 'events',
+  timestamps: false,
+});
 
-  create: async (name, description, date, location, color, category) => {
-    const pool = await poolPromise;
-    const [result] = await pool.query(
-      'INSERT INTO events (name, description, date, location, color, category) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, description, date, location, color, category]
-    );
-    return result.insertId;
-  },
-
-  async update(id, name, description, date, location, color, category) {
-    const pool = await poolPromise;
-    const [result] = await pool.query(
-      'UPDATE events SET name = ?, description = ?, date = ?, location = ?, color = ?, category = ? WHERE id = ?',
-      [name, description, date, location, color, category, id]
-    );
-    return result;
-  },
-
-  async delete(id) {
-    const pool = await poolPromise;
-    const [result] = await pool.query(
-      'DELETE FROM events WHERE id = ?',
-      [id]
-    );
-    return result;
+Event.getAll = async () => {
+  try {
+    const events = await Event.findAll();
+    return events;
+  } catch (err) {
+    throw err;
+  }
+};
+Event.getById = async (id) => {
+  try {
+    const event = await Event.findByPk(id);
+    return event;
+  } catch (err) {
+    throw err;
   }
 };
 

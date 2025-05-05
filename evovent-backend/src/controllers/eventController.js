@@ -1,13 +1,28 @@
+const multer = require('multer');
+const path = require('path');
+
+// Configuração do Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Pasta onde as imagens serão salvas
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
 const Event = require('../models/eventModel');
 
 exports.getEvents = async (req, res) => {
   try {
-    const events = await Event.getAll();
+    const events = await Event.findAll();
+    console.log(events);
     res.json(events);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erro ao buscar eventos', details: err.message });
   }
-};
+}
 
 exports.getEventById = async (req, res) => {
   try {
@@ -44,13 +59,38 @@ exports.getEventById = async (req, res) => {
 
 exports.createEvent = async (req, res) => {
   try {
-    const { name, description, date, location, color, category } = req.body;
-    const eventId = await Event.create(name, description, date, location, color, category);
-    res.status(201).json({ id: eventId, message: 'Evento criado com sucesso!' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  };
+    const { name, description, date, time, location, color, category, producer_id } = req.body;
+    
+    // Verifica se o arquivo foi enviado
+    const imagePath = req.file ? req.file.path : null;
 
+    console.log('Dados recebidos:', {
+      name, description, date, time, location, 
+      color, category, producer_id, image: imagePath
+    });
+
+    const event = await Event.create({
+      name,
+      description,
+      date,
+      time: time || '00:00:00', // Valor padrão se não for enviado
+      location,
+      color,
+      category,
+      image: req.file ? `/uploads/events/${req.file.filename}` : null,
+      producer_id,
+      status: 'active'
+    });
+
+    res.status(201).json({ 
+      id: event.id, 
+      message: 'Evento criado com sucesso!',
+      imageUrl: imagePath ? `${req.protocol}://${req.get('host')}/${imagePath}` : null
+    });
+  } catch (err) {
+    console.error('Erro ao criar evento:', err);
+    res.status(500).json({ error: err.message });
+  }
 };
 exports.updateEvent = async (req, res) => {
   try {

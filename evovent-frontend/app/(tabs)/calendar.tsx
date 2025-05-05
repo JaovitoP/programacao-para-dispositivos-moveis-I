@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import axios from 'axios';
 import { format } from 'date-fns';
-import { api } from '../api/client'; // Certifique-se de que esta parte está configurada corretamente
+import { api } from '../api/client';
 import { useFocusEffect } from 'expo-router';
+import { Calendar, CalendarList, Agenda } from 'react-native-calendars';
+import { t } from 'i18next';
 
 export default function CalendarScreen() {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState<boolean>(false); // Definir o estado de refreshing
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const loadEvents = async () => {
     try {
@@ -20,7 +22,7 @@ export default function CalendarScreen() {
         title: event.name,
         date: new Date(event.date),
         location: event.location,
-        image: event.image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=1000', // fallback image
+        image: event.image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=1000',
       }));
       setEvents(formattedEvents);
       setError(null);
@@ -38,12 +40,21 @@ export default function CalendarScreen() {
     loadEvents();
   };
 
-
   useFocusEffect(
     useCallback(() => {
       loadEvents();
     }, [])
   );
+
+  // Formatação correta para o react-native-calendars
+  const markedDates = events.reduce((acc: any, event) => {
+    const dateKey = format(event.date, 'yyyy-MM-dd');
+    acc[dateKey] = {
+      marked: true,
+      dotColor: 'red',
+    };
+    return acc;
+  }, {});
 
   if (loading) {
     return (
@@ -62,29 +73,42 @@ export default function CalendarScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Calendário</Text>
-      </View>
+    <View style={styles.container}>
+      <Calendar
+        onDayPress={(day) => {
+          const selectedDate = day.dateString;
+          const dayEvents = events.filter(event => 
+            format(event.date, 'yyyy-MM-dd') === selectedDate
+          );
+          
+          if (dayEvents.length > 0) {
+            alert(dayEvents.map(event => `${event.title} - ${event.location}`).join('\n'));
+          } else {
+            alert('Nenhum evento nesta data');
+          }
+        }}
+        markedDates={markedDates}
+      />
 
-      {events.map((day) => (
-      <View key={`${day.id}-${day.date.toISOString()}`} style={styles.dayContainer}>
-        <Text style={styles.dateHeader}>
-          {format(day.date, 'EEEE, MMMM d, yyyy')}
-        </Text>
-        <View key={day.id} style={styles.eventItem}>
-          <View style={styles.timeContainer}>
-            <Text style={styles.timeText}>{day.time}</Text>
-          </View>
-          <View style={styles.eventContent}>
-            <Text style={styles.eventTitle}>{day.title}</Text>
-            <Text style={styles.eventType}>{day.location}</Text>
-          </View>
+      <ScrollView 
+        style={styles.eventList}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>{t('Eventos')}</Text>
         </View>
-      </View>
-    ))}
 
-    </ScrollView>
+        {events.map((event) => (
+          <View key={event.id} style={styles.eventItem}>
+            <Text style={styles.eventTitle}>{event.title}</Text>
+            <Text style={styles.eventDate}>{format(event.date, 'dd/MM/yyyy')}</Text>
+            <Text style={styles.eventType}>{event.location}</Text>
+          </View>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -95,7 +119,8 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
-    paddingTop: 60,
+    paddingTop: 20,
+    marginBottom: 10,
     backgroundColor: '#ffffff',
   },
   title: {
@@ -103,18 +128,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#111827',
   },
-  dayContainer: {
+  eventList: {
     marginTop: 20,
     paddingHorizontal: 20,
   },
-  dateHeader: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: '#4b5563',
-    marginBottom: 12,
-  },
   eventItem: {
-    flexDirection: 'row',
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 16,
@@ -125,21 +143,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  timeContainer: {
-    marginRight: 16,
-  },
-  timeText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: '#6366f1',
-  },
-  eventContent: {
-    flex: 1,
-  },
   eventTitle: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 16,
     color: '#111827',
+    marginBottom: 4,
+  },
+  eventDate: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    color: '#6b7280',
     marginBottom: 4,
   },
   eventType: {

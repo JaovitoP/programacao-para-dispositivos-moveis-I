@@ -1,75 +1,139 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
-import { Settings, Bell, Calendar, Heart, LogOut } from 'lucide-react-native';
+import { Settings, Bell, Calendar, Heart, LogOut, QrCode } from 'lucide-react-native';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
+import { useState } from 'react';
 
-const MENU_ITEMS = [
-  {
-    icon: Settings,
-    label: 'Configurações',
-    route: 'Configurações',
-  },
-  {
-    icon: Bell,
-    label: 'Notificações',
-    route: 'Notificações',
-  },
-  {
-    icon: Calendar,
-    label: 'Meus Eventos',
-    route: 'Meus Eventos',
-  },
-  {
-    icon: Heart,
-    label: 'Eventos Salvos',
-    route: 'Eventos Salvos',
-  },
-];
+import {} from '../i18n'
+
+import { useTranslation } from 'react-i18next'
+import { t } from 'i18next';
 
 export default function ProfileScreen() {
+  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const {t, i18n} = useTranslation();
+
+  const changeLanguage = (value: string) => {
+    i18n.changeLanguage(value)
+    .then( () => {
+      setCurrentLanguage(value);
+      console.log('Language changed to:', value);
+    })
+    .catch( () => {
+      console.error('Error changing language:', value);
+    })
+  }
+  const { authState, onLogout } = useAuth();
+  const navigation = useNavigation();
+
+  const handleLogout = async () => {
+    if (onLogout) {
+      await onLogout();
+    }
+  };
+
+  const navigateToMyEvents = () => {
+    navigation.navigate('MyEvents', { userId: authState.user.id });
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Meu Perfil</Text>
+        <Text style={styles.title}>{t('Meu Perfil')}</Text>
       </View>
 
       <View style={styles.profile}>
-        <Image
-          source={{ uri: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200&h=200' }}
-          style={styles.avatar}
-        />
-        <Text style={styles.name}>John Doe</Text>
-        <Text style={styles.email}>john.doe@email.com</Text>
-        <View style={styles.stats}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>12</Text>
-            <Text style={styles.statLabel}>Eventos Criados</Text>
-          </View>
-          <View style={[styles.statItem]}>
-            <Text style={styles.statNumber}>48</Text>
-            <Text style={styles.statLabel}>Eventos Comparecidos</Text>
-          </View>
-        </View>
+        <Text style={styles.name}>{t('Bem-Vindo')}, {authState.user.name}!</Text>
+        <Text style={styles.email}>{authState.user.email}</Text>
+        <View style={styles.languageSwitcher}>
+  <TouchableOpacity 
+    onPress={() => changeLanguage('en')} 
+    style={[
+      styles.languageButton,
+      currentLanguage === 'en' && styles.languageButtonActive
+    ]}
+  >
+    <Text style={[
+      styles.languageText,
+      currentLanguage === 'en' && styles.languageTextActive
+    ]}>English</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity 
+    onPress={() => changeLanguage('pt')} 
+    style={[
+      styles.languageButton,
+      currentLanguage === 'pt' && styles.languageButtonActive
+    ]}
+  >
+    <Text style={[
+      styles.languageText,
+      currentLanguage === 'pt' && styles.languageTextActive
+    ]}>Português</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity 
+    onPress={() => changeLanguage('esp')} 
+    style={[
+      styles.languageButton,
+      currentLanguage === 'esp' && styles.languageButtonActive
+    ]}
+  >
+    <Text style={[
+      styles.languageText,
+      currentLanguage === 'esp' && styles.languageTextActive
+    ]}>Espanhol</Text>
+  </TouchableOpacity>
+</View>
+
+
       </View>
 
       <View style={styles.menu}>
-        {MENU_ITEMS.map((item) => (
-          <TouchableOpacity key={item.route} style={styles.menuItem}>
-            <View style={styles.menuIcon}>
-              <item.icon size={24} color="#6b7280" />
-            </View>
-            <Text style={styles.menuLabel}>{item.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+  <TouchableOpacity 
+    style={styles.menuItem}
+    onPress={navigateToMyEvents}
+  >
+    <View style={styles.menuIcon}>
+      <QrCode size={24} color="#6b7280" />
+    </View>
+    <Text style={styles.menuLabel}>{t('Minhas Reservas')}</Text>
+  </TouchableOpacity>
+</View>
 
-      <TouchableOpacity style={styles.logoutButton}>
+      <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
         <LogOut size={24} color="#ef4444" />
-        <Text style={styles.logoutText}>Log Out</Text>
+        <Text style={styles.logoutText}>{t('Sair')}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
+
 const styles = StyleSheet.create({
+  languageSwitcher: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+  },
+  languageButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: '#e5e7eb',
+  },
+  languageButtonActive: {
+    backgroundColor: '#6366f1',
+  },
+  languageText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: '#374151',
+  },
+  languageTextActive: {
+    color: '#ffffff',
+  },
+  
   container: {
     flex: 1,
     backgroundColor: '#f3f4f6',
