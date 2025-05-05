@@ -18,7 +18,7 @@ O Evovent consiste em uma aplicação mobile para gerenciamento de diferentes ti
 
 ## Minimum Viable Product
 
-![MVP](https://github.com/user-attachments/assets/9d4b4b39-b840-4ddb-9a87-1b5d74e8c972)
+![MVP](https://github.com/user-attachments/assets/baeeded6-fb4d-453e-9b7a-f0893ed43d3a)
 
 
 ## Product Backlog
