@@ -8,3 +8,7 @@ router.post('/auth', login);
 router.use(authenticateToken);
 
 module.exports = router;
+const express = require('express')
+const { auth } = require('../controllers/authController');
+
+module.exports = router;

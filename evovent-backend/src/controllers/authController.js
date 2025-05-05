@@ -1,6 +1,7 @@
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const User = require('../models/userModel');
+const jwt = require('jsonwebtoken');
+const db = require('../database'); // seu pool de conexão
+const JWT_SECRET = process.env.JWT_SECRET || 'segredo_super_secreto';
 
 // Função de registro
 exports.register = async (req, res) => {
@@ -28,8 +29,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// Função de login
-exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     // Encontra usuário
@@ -37,11 +36,13 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
-    
-    // Verifica senha
+
+    user = users[0];
+
+    // Compara a senha com o hash do banco
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ msg: 'Senha inválida' });
     }
     
     // Cria token JWT
@@ -62,18 +63,3 @@ exports.login = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error logging in', error: error.message });
   }
-};
-
-// Middleware de autenticação (pode ser movido para um arquivo separado se preferir)
-exports.authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token) return res.sendStatus(401);
-  
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-};
