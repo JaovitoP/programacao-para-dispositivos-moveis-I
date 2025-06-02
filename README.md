@@ -10,6 +10,10 @@ O Evovent consiste em uma aplicação mobile para gerenciamento de diferentes ti
  <a href="https://tailwindcss.com/" target="_blank"><img src="https://img.shields.io/badge/tailwind-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white" alt='TailwindCSS' target="_blank"></a>
 </h4>
 
+## MVP da Sprint
+
+![MVP (2) - Copia](https://github.com/user-attachments/assets/f2d492fd-dc44-4b9b-be6c-b81e8d1aa224)
+
 ## Product Backlog
 
 ![Requisitos EvoVent](https://github.com/user-attachments/assets/94adafc7-a0e9-4c19-a371-db6720bea898)
