@@ -13,6 +13,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 const Event = require('../models/eventModel');
+const User = require('../models/userModel');
 
 exports.getEvents = async (req, res) => {
   try {
@@ -29,7 +30,7 @@ exports.getEventById = async (req, res) => {
     const { id } = req.params;
     
     const event = await Event.getById(id);
-    
+    const user = await User.getById(event.producer_id);
     if (!event) {
       return res.status(404).json({ message: 'Evento não encontrado' });
     }
@@ -45,11 +46,23 @@ exports.getEventById = async (req, res) => {
       status: event.status,
       color: event.color || '#6366f1',
       category: event.category,
-      createdAt: event.created_at
+      createdAt: event.created_at,
+      image: event.image,
+      producer: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        instagram_url: user.instagram_url,
+        about: user.about,
+        facebook_url: user.facebook_url,
+        twitter_url: user.twitter_url,
+        linkedin_url: user.linkedin_url,
+      }
     };
 
     res.json(eventData);
   } catch (err) {
+    console.error('Erro ao buscar evento:', err);
     res.status(500).json({ 
       error: 'Erro ao buscar evento',
       details: err.message 
@@ -123,5 +136,27 @@ exports.deleteEvent = async (req, res) => {
     res.json({ message: 'Evento excluído com sucesso!' });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getEventsByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const events = await Event.findByProducerId(userId);
+
+    if (!events || events.length === 0) {
+      return res.status(404).json({ message: 'Nenhum evento encontrado para este usuário' });
+    }
+
+    console.log(  'Eventos encontrados:', events);
+
+    res.json(events);
+  } catch (err) {
+    console.error('Erro ao buscar eventos por usuário:', err);
+    res.status(500).json({ 
+      error: 'Erro ao buscar eventos por usuário', 
+      details: err.message 
+    });
   }
 };

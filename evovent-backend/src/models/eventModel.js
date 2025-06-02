@@ -80,4 +80,17 @@ Event.getById = async (id) => {
   }
 };
 
+Event.findByProducerId = async (userId) => {
+  try {
+    const events = await Event.findAll({
+      where: {
+        producer_id: userId,
+      },
+    });
+    return events;
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = Event;

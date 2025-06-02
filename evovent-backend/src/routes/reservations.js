@@ -7,7 +7,8 @@ const {
   deleteReservation,
   getReservationsByUserId,
   getReservationsByEventId,
-  updateReservationStatus
+  updateReservationStatus,
+  validateTicket
 } = require('../controllers/reservationController');
 
 const router = express.Router();
@@ -21,5 +22,5 @@ router.delete('/reservations/:id', deleteReservation);
 router.get('/users/:user_id/reservations', getReservationsByUserId);
 router.get('/events/:event_id/reservations', getReservationsByEventId);
 router.patch('/reservations/:id/status', updateReservationStatus);
-
+router.post('/reservations/validate/:id', validateTicket);
 module.exports = router;

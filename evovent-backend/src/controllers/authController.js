@@ -5,9 +5,11 @@ const User = require('../models/userModel');
 // Função de registro
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    console.log(req.body)
+    const { name, email, password, instagram_url, facebook_url, linkedin_url, about, cpf} = req.body;
+    console.log('Registering user with data:', req.body);
     // Verifica se usuário já existe
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({ where: { cpf } });
     if (existingUser) {
       console.log('User already exists:', email);
       return res.status(400).json({ message: 'User already exists' });
@@ -17,7 +19,7 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     
     // Cria usuário
-    const user = new User({ name, email, password: hashedPassword, created_at: new Date(), updated_at: new Date() });
+    const user = new User({ name, email, password: hashedPassword, created_at: new Date(), updated_at: new Date(), instagram_url, facebook_url, linkedin_url, about, cpf});
     await user.save();
     console.log('User created:', user);
     
