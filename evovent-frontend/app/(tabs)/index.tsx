@@ -21,7 +21,7 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const API_BASE_URL = 'http:///192.168.15.7:5000/api';
+  const API_BASE_URL = 'http://192.168.15.7:5000/api';
   useEffect(() => {
     if (authState?.authenticated && authState.user) {
       console.log('ID do usuário:', authState.user.id);
@@ -29,18 +29,31 @@ export default function HomeScreen() {
   }, [authState]);
 
   const loadEvents = async () => {
+
+    const mockImages = [
+      'https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1497032205916-ac775f0649ae?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1521335629791-ce4aec67ddaf?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1515165562835-c4c3fff6c490?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1000&q=80',
+    ];
+    
     try {
       setLoading(true);
       const response = await api.getEvents();
       
-      const formattedEvents = response.data.map((event: any) => ({
+      const formattedEvents = response.data.map((event: any, index: number) => ({
         id: event.id,
         title: event.name,
         date: new Date(event.date),
         location: event.location,
         image: event.image 
-    ? `${API_BASE_URL}${event.image}`  // Concatena com a URL base
-    : 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=1000'
+        ? `http://192.168.15.7:5000${event.image}` 
+        : mockImages[index % mockImages.length],
       }));
       
 

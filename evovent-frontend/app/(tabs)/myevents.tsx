@@ -1,43 +1,52 @@
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
-import api from '@/app/api/client';
 import { useEffect, useState } from 'react';
+import { EventDetails } from '@/app/types/event';
+import { Users } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import api from '@/app/api/client';
 
-interface Reservation {
-  id: string;
-  code: string;
-  status: string;
-  amount: number;
-  created_at: string;
-}
-
-export default function MyEvents() {
+export default function MyEventsScreen() {
   const { authState } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [events, setEvents] = useState<EventDetails[]>([]);
+  const navigation = useNavigation();
 
-  const loadReservations = async () => {
+  const loadEvents = async () => {
     try {
       setLoading(true);
+      setError(null);
       if (authState?.authenticated && authState.user?.id) {
-        const reservationsResponse = await api.getReservationsByUser(authState.user.id);
-        console.log('Reservations:', reservationsResponse.data);
-        setReservations(reservationsResponse.data || []);
+        const eventsResponse = await api.getEventsByUserId(authState.user.id);
+        console.log('Events:', eventsResponse.data);
+        setEvents(eventsResponse.data || []);
       }
     } catch (err: any) {
-      setError('Falha ao carregar suas reservas');
-      console.error('Error loading reservations:', err);
-      setReservations([]);
+      if (err.response && err.response.status === 404) {
+        setEvents([]);
+      } else {
+        setError('Falha ao carregar seus eventos');
+        console.error('Error loading events:', err);
+        setEvents([]);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadReservations();
+    loadEvents();
   }, [authState?.authenticated]);
+
+  const handleViewParticipants = (eventId: string) => {
+    console.log(`Ver participantes do evento ${eventId}`);
+  };
+
+  const navigateToParticipants = (eventId: Number) => {
+    navigation.navigate('Participants', { eventId });
+  };
 
   if (loading) {
     return (
@@ -55,39 +64,46 @@ export default function MyEvents() {
     );
   }
 
-  if (reservations.length === 0) {
+  if (events.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>Você não tem reservas ainda</Text>
+        <Text style={styles.emptyText}>Você não tem eventos ainda</Text>
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Minhas Reservas</Text>
-      
-      {reservations.map(reservation => (
-        <View key={reservation.id} style={styles.reservationCard}>
+      {events.map(event => (
+        <View key={event.id} style={styles.reservationCard}>
+          {/* Adicione a Image aqui */}
+          {event.image && (
+            <Image 
+              source={{ uri: `http://192.168.15.7:5000${event.image}` }}
+              style={styles.eventImage}
+              onError={(e) => console.log('Erro ao carregar imagem:', e.nativeEvent.error)}
+            />
+          )}
+          
           <View style={styles.reservationDetails}>
-            <Text style={styles.detailLabel}>Código:</Text>
-            <Text style={styles.detailValue}>{reservation.code}</Text>
-
-            <Text style={styles.detailLabel}>Quantidade:</Text>
-            <Text style={styles.detailValue}>{reservation.amount}</Text>
-            
+            <Text style={styles.detailValue}>{event.name}</Text>
             <Text style={styles.detailLabel}>Status:</Text>
-            <Text style={[
-              styles.detailValue,
-              reservation.status === 'active' ? styles.statusActive : styles.statusInactive
-            ]}>
-              {reservation.status === 'active' ? 'Ativa' : 'Inativa'}
+            <Text style={[styles.detailValue, event.status === 'active' ? styles.statusActive : styles.statusInactive]}>
+              {event.status === 'active' ? 'Ativo' : 'Inativo'}
             </Text>
 
-            <Text style={styles.detailLabel}>Data:</Text>
+            <Text style={styles.detailLabel}>Criado em:</Text>
             <Text style={styles.detailValue}>
-              {format(new Date(reservation.created_at), 'dd/MM/yyyy HH:mm')}
+              {format(new Date(event.created_at), 'dd/MM/yyyy HH:mm')}
             </Text>
+
+            <TouchableOpacity 
+              style={styles.participantsButton} 
+              onPress={() => navigateToParticipants(Number(event.id))}
+            >
+              <Users size={18} color="#fff" style={{ marginRight: 6 }} />
+              <Text style={styles.participantsButtonText}>Ver Participantes</Text>
+            </TouchableOpacity>
           </View>
         </View>
       ))}
@@ -96,7 +112,14 @@ export default function MyEvents() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+   eventImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 12,
+    resizeMode: 'cover',
+  },
+    container: {
     flex: 1,
     backgroundColor: '#f3f4f6',
     padding: 16,
@@ -122,12 +145,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 40,
   },
-  title: {
-    fontSize: 24,
-    color: '#111827',
-    marginBottom: 20,
-    fontWeight: 'bold',
-  },
   reservationCard: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
@@ -149,7 +166,7 @@ const styles = StyleSheet.create({
   detailValue: {
     fontSize: 16,
     color: '#374151',
-    marginBottom: 12,
+    marginBottom: 8,
     fontWeight: '600',
   },
   statusActive: {
@@ -157,5 +174,19 @@ const styles = StyleSheet.create({
   },
   statusInactive: {
     color: '#ef4444',
+  },
+  participantsButton: {
+    marginTop: 10,
+    backgroundColor: '#6366f1',
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  participantsButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

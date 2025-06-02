@@ -1,76 +1,149 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
-import { api } from '@/app/api/client';
 import { useAuth } from '@/context/AuthContext';
+import { FontAwesome } from '@expo/vector-icons';
+import { mask as masker, unMask } from 'react-native-mask-text';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
-  const [loading, setLoading] = useState(false);
   const { onLogin, onRegister } = useAuth();
+  
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [cpf, setCpf] = useState("");
   const [password, setPassword] = useState("");
+  
   const [isLoading, setIsLoading] = useState(false);
+  
+  const [instagram_url, setInstagram_url] = useState("");
+  const [facebook_url, setFacebook_url] = useState("");
+  const [linkedin_url, setLinkedin_url] = useState("");
+  const [about, setAbout] = useState("");
+
   const login = async () => {
     const result = await onLogin!(email, password);
     if (result && result.error){
       alert(result.msg);
     }
-  }
+  };
 
   const register = async () => {
-    const result = await onRegister!(name,email,password);
+    setIsLoading(true);
+    const result = await onRegister!(name, email, password, instagram_url, facebook_url, linkedin_url, about, cpf);
+    setIsLoading(false);
     if (result && result.error) {
-      alert(result.msg);
+      alert('Há algo de errado, verifique os dados e tente novamente.');
     } else {
       login();
     }
-  }
+  };
+    const handleChangeCpf = (text) => {
+    const maskedText = masker(text, '999.999.999-99');
+    setCpf(maskedText);
+  };
+
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Criar conta</Text>
-      <TextInput 
-        style={styles.input}
-        placeholder="Nome" 
-        onChangeText={setName} 
-      />
-      <TextInput 
-        style={styles.input}
-        placeholder="Email" 
-        onChangeText={setEmail} 
-      />
-      <TextInput 
-        style={styles.input}
-        placeholder="Password" 
-        secureTextEntry 
-        onChangeText={setPassword} 
-      />
-      <TouchableOpacity 
-        onPress={register} 
-        style={[styles.button, styles.signInButton, isLoading && styles.disabledButton]}
-        disabled={isLoading}
-      >
-        <Text style={styles.buttonText}>Cadastrar</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity onPress={() => router.push('/login')}>
-        <Text style={styles.loginText}>
-          Já tem uma conta? <Text style={styles.loginLink}>Faça login</Text>
-        </Text>
-      </TouchableOpacity>
-    </View>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Criar conta</Text>
+        
+        <Text style={styles.socialToggleText}>Dados Pessoais</Text>
+        <TextInput 
+          style={styles.input}
+          placeholder="CPF"
+          onChangeText={handleChangeCpf}
+          value={cpf}
+          keyboardType="numeric"
+          maxLength={14}
+        />
+
+        <TextInput 
+          style={styles.input}
+          placeholder="Nome" 
+          onChangeText={setName} 
+        />
+        <TextInput 
+          style={styles.input}
+          placeholder="Email" 
+          onChangeText={setEmail} 
+        />
+        <TextInput 
+          style={styles.input}
+          placeholder="Senha" 
+          secureTextEntry 
+          onChangeText={setPassword} 
+        />
+        <TextInput 
+          style={styles.input}
+          placeholder="Sobre Mim" 
+          onChangeText={setAbout} 
+        />
+
+        <TouchableOpacity 
+          style={styles.socialToggle}
+          onPress={() => setShowSocials(!showSocials)}
+        >
+          <Text style={styles.socialToggleText}>Redes Sociais</Text>
+        </TouchableOpacity>
+
+          <View style={styles.socialInputs}>
+            <View style={styles.inputWithIcon}>
+              <FontAwesome name="instagram" size={20} color="#C13584" style={styles.icon} />
+              <TextInput 
+                style={styles.inputFlex}
+                placeholder="Instagram" 
+                onChangeText={setInstagram_url} 
+                value={instagram_url}
+              />
+            </View>
+            <View style={styles.inputWithIcon}>
+              <FontAwesome name="facebook" size={20} color="#3b5998" style={styles.icon} />
+              <TextInput 
+                style={styles.inputFlex}
+                placeholder="Facebook" 
+                onChangeText={setFacebook_url} 
+                value={facebook_url}
+              />
+            </View>
+            <View style={styles.inputWithIcon}>
+              <FontAwesome name="linkedin" size={20} color="#0077B5" style={styles.icon} />
+              <TextInput 
+                style={styles.inputFlex}
+                placeholder="LinkedIn" 
+                onChangeText={setLinkedin_url} 
+                value={linkedin_url}
+              />
+            </View>
+          </View>
+
+        <TouchableOpacity 
+          onPress={register} 
+          style={[styles.button, styles.signInButton, isLoading && styles.disabledButton]}
+          disabled={isLoading}
+        >
+          <Text style={styles.buttonText}>
+            {isLoading ? "Cadastrando..." : "Cadastrar"}
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.loginText}>
+            Já tem uma conta? <Text style={styles.loginLink}>Faça login</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
+  },
+  container: {
     padding: 20,
     backgroundColor: '#f5f5f5',
   },
@@ -91,19 +164,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: 16,
   },
+  inputWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 15,
+    paddingHorizontal: 10,
+    height: 50,
+  },
+  inputFlex: {
+    flex: 1,
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  icon: {
+    width: 24,
+  },
   signInButton: {
-    backgroundColor: '#006147', // Verde
+    backgroundColor: '#006147', 
   },
   button: {
     height: 50,
-    backgroundColor: '#006147',
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
   },
   disabledButton: {
-    backgroundColor: '#CCCCCC', // Cinza quando desativado
+    backgroundColor: '#CCCCCC', 
   },
   buttonText: {
     color: '#fff',
@@ -118,6 +209,20 @@ const styles = StyleSheet.create({
     color: '#006147',
     fontWeight: 'bold',
   },
+  socialToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    justifyContent: 'space-between',
+  },
+  socialToggleText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
+  socialInputs: {
+    marginBottom: 15,
+  }
 });
 
 export default RegisterScreen;

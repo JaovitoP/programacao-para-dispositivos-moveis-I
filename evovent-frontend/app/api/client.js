@@ -15,6 +15,7 @@ export default {
   createEvent: (eventData) => api.post('/events', eventData),
   updateEvent: (id, eventData) => api.put(`/events/${id}`, eventData),
   deleteEvent: (id) => api.delete(`/events/${id}`),
+  getEventsByUserId: (userId) => api.get(`/user/${userId}/events`),
   
   // Feedbacks
   getAllFeedbacks: () => api.get('/feedbacks'),
@@ -29,12 +30,13 @@ export default {
   getTicketsByEventId: (eventId) => api.get(`/tickets/event/${eventId}`),
 
   // Users
-  getUserById: async (userId) => {
-    return axios.get(`/users/${userId}`);
-  },
+  getUserById: (id) => api.get(`/users/${id}`),
 
   // Reservations
+  getReservations : () => api.get('/reservations'),
   createReservation: (reservationData) => api.post('/reservations', reservationData),
-  getReservationsByUser: (userId) => api.get(`/users/${userId}/reservations`), // Usando o endpoint correto
+  getReservationsByUser: (userId) => api.get(`/users/${userId}/reservations`), 
   getReservationById: (id) => api.get(`/reservations/${id}`),
+  getReservationsByEventId: (eventId) => api.get(`/events/${eventId}/reservations`),
+  validateTicket: (reservationId) => api.post(`/reservations/validate/${reservationId}`,),
 };

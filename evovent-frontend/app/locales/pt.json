@@ -3,7 +3,6 @@
         "Bem-Vindo": "Bem-Vindo",
         "Meu Perfil": "Meu Perfil",
         "Sair": "Sair",
-        "Próximos Eventos": "Próximos Eventos",
         "Novo Evento": "Novo Evento",
         "Buscar Eventos": "Buscar Eventos",
         "Eventos": "Eventos",
@@ -14,7 +13,8 @@
         "Quantidade de ingressos": "Quantidade de ingressos",
         "Descrição": "Descrição",
         "Criar Evento": "Criar Evento",
-        "Minhas Reservas": "Minhas Reservas"
-
+        "Minhas Reservas": "Minhas Reservas",
+        "Próximos Eventos": "Próximos Eventos",
+        "Meus Eventos": "Meus Eventos"
     }
   }

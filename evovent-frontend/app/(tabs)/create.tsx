@@ -95,7 +95,6 @@ export default function CreateEventScreen() {
   
       const formDataToSend = new FormData();
   
-      // Adiciona todos os campos do evento ao FormData
       formDataToSend.append('name', formData.name);
       formDataToSend.append('description', formData.description || '');
       formDataToSend.append('date', formData.date);
@@ -106,7 +105,6 @@ export default function CreateEventScreen() {
       formDataToSend.append('status', 'active');
       formDataToSend.append('producer_id', authState.user.id);
   
-      // Adiciona a imagem se existir
       if (formData.image) {
         const localUri = formData.image;
         const filename = localUri.split('/').pop() || 'image.jpg';
@@ -120,7 +118,6 @@ export default function CreateEventScreen() {
         } as any);
       }
   
-      // Envia tudo em uma única requisição
       const eventResponse = await api.createEvent(formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -129,7 +126,6 @@ export default function CreateEventScreen() {
   
       const eventId = eventResponse.data.id;
   
-      // Criar ticket gratuito
       const ticketData = {
         type: 'Gratuito',
         status: 'active',

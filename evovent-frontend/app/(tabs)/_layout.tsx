@@ -9,7 +9,10 @@ import DetailsScreen from './[id]';
 import CalendarScreen from './calendar';
 import CreateScreen from './create';
 import ProfileScreen from './profile';
-import MyEventsScreen from './myevents';
+import MyReservationsScreen from './myReservations';
+import MyEventsScreen from './myEvents';
+import DashboardScreen from './dashboard';
+import ParticipantsScreen from './participants';
 import Tabs from '../components/tabs';
 
 const Stack = createNativeStackNavigator();
@@ -43,8 +46,17 @@ function AppNavigation() {
             <Stack.Screen name="Calendar" component={CalendarScreen} />
             <Stack.Screen name="Create" component={CreateScreen} options={{ title: "Novo evento" }}/>
             <Stack.Screen name="Profile" component={ProfileScreen} />
-            <Stack.Screen name="MyEvents" component={MyEventsScreen} options={{
+            <Stack.Screen name="MyReservations" component={MyReservationsScreen} options={{
             title: "Reservas feitas",
+          }}/>
+          <Stack.Screen name="MyEvents" component={MyEventsScreen} options={{
+            title: "Meus Eventos",
+          }}/>
+          <Stack.Screen name="Dashboard" component={DashboardScreen} options={{
+            title: "Dashboard",
+          }}/>
+          <Stack.Screen name="Participants" component={ParticipantsScreen} options={{
+            title: "Registro de Participantes",
           }}/>
           </>
         ) : (

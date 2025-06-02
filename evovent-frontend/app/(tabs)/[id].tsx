@@ -1,7 +1,7 @@
-import { Modal, TextInput, View, Text, StyleSheet, Image, ScrollView, ActivityIndicator, TouchableOpacity, Share, Button, Alert } from 'react-native';
+import { Modal, TextInput, View, Text, StyleSheet, Image, ScrollView, ActivityIndicator, TouchableOpacity, Share, Button, Alert, Linking } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { format } from 'date-fns';
-import { MapPin, Clock, Users, Share2 } from 'lucide-react-native';
+import { MapPin, Clock, Users, Share2, Instagram, Linkedin, Facebook, Twitter, Globe } from 'lucide-react-native';
 import api from '@/app/api/client';
 import { useEffect, useState } from 'react';
 import * as Sharing from 'expo-sharing';
@@ -49,6 +49,12 @@ const calculateAverageRating = (feedbacks: Feedback[]) => {
 };
 
 export default function EventDetailsScreen() {
+
+  const isEventPast = (eventDate: string) => {
+    const eventDateTime = new Date(eventDate).getTime();
+    const currentDateTime = new Date().getTime();
+    return eventDateTime < currentDateTime;
+  };
   const { authState } = useAuth();
   const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
   const [rating, setRating] = useState(0);
@@ -149,6 +155,11 @@ const openReservationModal = (ticket: Ticket) => {
 
   const handleRateEvent = async () => {
     try {
+      if (!event || !isEventPast(event.date)) {
+        Alert.alert('Avaliação não disponível', 'Você só pode avaliar eventos que já aconteceram');
+        return;
+      }
+      
       if (rating === 0) {
         Alert.alert('Avaliação necessária', 'Por favor, selecione uma avaliação de 1 a 5 estrelas');
         return;
@@ -275,10 +286,14 @@ const openReservationModal = (ticket: Ticket) => {
     );
   }
 
+  const openSocialMedia = (url: string) => {
+      Linking.openURL(url).catch(err => console.error("Failed to open URL:", err));
+    };
+
   return (
     <ScrollView style={[styles.container, { backgroundColor: event.color || '#f3f4f6' }]}>
       <Image 
-        source={{ uri: event.image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=1000' }} 
+        source={{ uri: `http://192.168.15.7:5000${event.image}` }} 
         style={styles.coverImage} 
       />
       <TouchableOpacity onPress={handleShare} style={styles.shareButton}>
@@ -311,6 +326,67 @@ const openReservationModal = (ticket: Ticket) => {
           <Text style={styles.sectionTitle}>Localização</Text>
           <Text>{event.location}</Text>
         </View>
+
+        <View style={styles.producerSection}>
+        <Text style={styles.sectionTitle}>Sobre o Produtor</Text>
+        
+        <View style={styles.producerHeader}>
+          <View style={styles.producerInfo}>
+            <Text style={styles.producerName}>{event.producer.name}</Text>
+            <Text style={styles.producerBio}>{event.producer.bio || 'Produtor de eventos experiente'}</Text>
+          </View>
+        </View>
+
+      <View style={styles.socialMediaContainer}>
+        <Text style={styles.socialTitle}>Redes Sociais:</Text>
+        <View style={styles.socialIcons}>
+          {event.producer.instagram_url && (
+            <TouchableOpacity 
+              style={styles.socialIcon}
+              onPress={() => openSocialMedia(event.producer.instagram_url)}
+            >
+              <Instagram size={24} color="#E1306C" />
+            </TouchableOpacity>
+          )}
+          
+          {event.producer.facebook_url && (
+            <TouchableOpacity 
+              style={styles.socialIcon}
+              onPress={() => openSocialMedia(event.producer.facebook_url)}
+            >
+              <Facebook size={24} color="#1877F2" />
+            </TouchableOpacity>
+          )}
+          
+          {event.producer.twitter_url && (
+            <TouchableOpacity 
+              style={styles.socialIcon}
+              onPress={() => openSocialMedia(event.producer.twitter_url)}
+            >
+              <Twitter size={24} color="#1DA1F2" />
+            </TouchableOpacity>
+          )}
+          
+          {event.producer.linkedin_url && (
+            <TouchableOpacity 
+              style={styles.socialIcon}
+              onPress={() => openSocialMedia(event.producer.linkedin_url)}
+            >
+              <Linkedin size={24} color="#0077B5" />
+            </TouchableOpacity>
+          )}
+          
+          {event.producer.website_url && (
+            <TouchableOpacity 
+              style={styles.socialIcon}
+              onPress={() => openSocialMedia(event.producer.website_url)}
+            >
+              <Globe size={24} color="#000000" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </View>
 
         {event.tickets && event.tickets.length > 0 && (
           <View style={styles.section}>
@@ -363,7 +439,7 @@ const openReservationModal = (ticket: Ticket) => {
             {event.feedbacks.map((feedback, index) => (
               <View key={index} style={styles.feedbackContainer}>
                 <View style={styles.feedbackHeader}>
-                  <Text style={styles.feedbackUser}>Usuário {index + 1}</Text>
+                  <Text style={styles.feedbackUser}>{feedback.user.name}</Text>
                   <Rating
                     type='star'
                     ratingCount={5}
@@ -385,9 +461,11 @@ const openReservationModal = (ticket: Ticket) => {
         )}
       </View>
       
-      <TouchableOpacity onPress={() => setIsRatingModalVisible(true)} style={styles.fab}>
-        <Text style={styles.fabText}>⭐ Avaliar</Text>
-      </TouchableOpacity>
+      {isEventPast(event.date) && (
+        <TouchableOpacity onPress={() => setIsRatingModalVisible(true)} style={styles.fab}>
+          <Text style={styles.fabText}>⭐ Avaliar</Text>
+        </TouchableOpacity>
+      )}
       
       <Modal
         animationType="slide"
@@ -511,6 +589,63 @@ const openReservationModal = (ticket: Ticket) => {
 }
 
 const styles = StyleSheet.create({
+producerHeader: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 16,
+},
+producerAvatar: {
+  width: 60,
+  height: 60,
+  borderRadius: 30,
+  marginRight: 16,
+},
+producerInfo: {
+  flex: 1,
+},
+producerName: {
+  fontFamily: 'Inter_600SemiBold',
+  fontSize: 18,
+  color: '#111827',
+  marginBottom: 4,
+},
+producerBio: {
+  fontFamily: 'Inter_400Regular',
+  fontSize: 14,
+  color: '#6b7280',
+},
+producerDescription: {
+  fontFamily: 'Inter_400Regular',
+  fontSize: 15,
+  color: '#374151',
+  lineHeight: 22,
+  marginBottom: 16,
+},
+socialMediaContainer: {
+  marginTop: 12,
+},
+socialTitle: {
+  fontFamily: 'Inter_500Medium',
+  fontSize: 16,
+  color: '#374151',
+  marginBottom: 8,
+},
+socialIcons: {
+  flexDirection: 'row',
+  gap: 16,
+},
+socialButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+  padding: 8,
+  backgroundColor: '#f9fafb',
+  borderRadius: 8,
+},
+socialText: {
+  fontFamily: 'Inter_500Medium',
+  fontSize: 14,
+},
   ticketInfo: {
     fontFamily: 'Inter_400Regular',
     fontSize: 16,
@@ -627,6 +762,12 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 24,
+  },
+  producerSection: {
+    marginBottom: 24,
+    borderRadius: 12,
+    padding: 16,
+    backgroundColor: '#ffffff'
   },
   sectionTitle: {
     fontFamily: 'Inter_600SemiBold',
@@ -819,8 +960,8 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 20,
-    right: 20,
+    top: 20,
+    left: 20,
     backgroundColor: '#006147',
     borderRadius: 50,
     paddingVertical: 12,
@@ -830,7 +971,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-  },
+    zIndex: 10,
+},
   fabText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 14,

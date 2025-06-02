@@ -30,7 +30,6 @@ const Login = () => {
     }
   }
 
-  // We automatically call the login after a sucessful registration
   const register = async () => {
     const result = await onRegister!(email,password);
     if (result && result.error) {
@@ -66,7 +65,7 @@ const Login = () => {
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.registerContainer}>
         <Text style={styles.registerText}>
-          Já tem uma conta? <Text style={styles.registerLink}>Faça seu cadastro</Text>
+          Não possui conta? <Text style={styles.registerLink}>Faça seu cadastro</Text>
         </Text>
       </TouchableOpacity>
     </View>

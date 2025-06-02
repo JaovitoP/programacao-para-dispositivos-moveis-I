@@ -5,7 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 
 interface AuthProps {
     authState?: { token: string | null; authenticated: boolean | null;  user: { id: string, name: string, email: string } | null; };
-    onRegister?: (name: string, email: string, password: string) => Promise<any>;
+    onRegister?: (name: string, email: string, password: string, instagram_url: string, facebook_url: string, linkedin_url: string, about: string, cpf: string) => Promise<any>;
     onLogin?: (email: string, password: string) => Promise<any>;
     onLogout?: () => Promise<any>;
 }
@@ -49,10 +49,10 @@ export const AuthProvider = ({ children }: any) => {
         loadToken();
     }, [])
 
-    const register = async (name: string, email: string, password: string) => {
+    const register = async (name: string, email: string, password: string, instagram_url: string, facebook_url: string, linkedin_url: string, about: string,cpf: string) => {
         try {
-            console.log(name, email, password)
-            return await axios.post(`${API_URL}/register`, { name, email, password });
+            console.log(name, email, password, instagram_url, facebook_url, linkedin_url, about);
+            return await axios.post(`${API_URL}/register`, { name, email, password, instagram_url, facebook_url, linkedin_url, about, cpf });
     } catch (e) {
         console.log("error", e)
         return { error: true, msg: (e as any).response.data.msg };    
@@ -62,9 +62,6 @@ export const AuthProvider = ({ children }: any) => {
     const login = async (email: string, password: string) => {
         try {
             const result =  await axios.post(`${API_URL}/auth`, { email, password });
-
-            console.log("file: AuthContext.tsx:41 ~ login ~ result:", result)
-
             setAuthState({
                 token: result.data.token,
                 authenticated: true,

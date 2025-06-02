@@ -7,7 +7,7 @@ export interface Event {
   date: Date;
   location: string;
   image: string;
-  averageRating?: number; // Adicione esta linha
+  averageRating?: number;
 }
 
 export interface EventDetails {
@@ -22,4 +22,12 @@ export interface EventDetails {
   color?: string;
   tickets?: Ticket[];
   feedbacks?: Feedback[];
+  status?: string;
+  created_at: string;
+  producer?: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+  }
 }
