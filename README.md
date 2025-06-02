@@ -1,19 +1,19 @@
-<h1 align="center"> Sprint 1 - Evovent </h1>
-<p align="center">
-  <a href="#objetivo">Objetivo da Sprint </a> |
-  <a href="#objetivo">Requisitos </a>
-</p>
+# Evovent 📆
+O Evovent consiste em uma aplicação mobile para gerenciamento de diferentes tipos eventos commo shows, palestras, aulas e workshops. Com ele é possível criar seus próprios eventos e divulgá-los para outros usuários. 
 
-**Status do Projeto: Concluído✔️**
-<br>
+### Tecnologias
 
-<span id="objetivo">
-  
-## 📌Objetivo da Sprint
-O objetivo da sprint é a criação e personalização dos eventos, de modo que seja possível transmitir a energia do evento mais facilmente das cores! É possível também compartilhar o evento, seja por e-mail, whatsapp, ou qualquer outra plataforma externa um convite para o evento, no qual serão encontradas todas as suas informações como localização, data e horário de início.
+<h4 align="left">
+ <a href="https://www.typescriptlang.org/" target="_blank"><img src="https://img.shields.io/badge/TypeScript-2f74c0?style=for-the-badge&logo=TypeScript&logoColor=white" alt ='TypeScript'target="_blank"></a>
+ <a href="https://nextjs.org/" target="_blank"><img src="https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white" alt='NextJS' target="_blank"></a>
+ <a href="https://nodejs.org/pt-br" target="_blank"><img src="https://img.shields.io/badge/-Node-57a746?style=for-the-badge&logo=nodedotjs&logoColor=white" alt='NodeJS' target="_blank"></a>
+ <a href="https://tailwindcss.com/" target="_blank"><img src="https://img.shields.io/badge/tailwind-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white" alt='TailwindCSS' target="_blank"></a>
+</h4>
 
- ## 📜Requisitos
- 
-- Criação de Evento ✔️
-- Personalização do Layout do Evento ✔️
-- Compartilhamento ✔️
+## MVP da Sprint
+
+![MVP (1) - Copia](https://github.com/user-attachments/assets/8f0eb73c-2dda-4f7b-af20-081606590506)
+
+## Product Backlog
+
+![Requisitos EvoVent](https://github.com/user-attachments/assets/94adafc7-a0e9-4c19-a371-db6720bea898)
