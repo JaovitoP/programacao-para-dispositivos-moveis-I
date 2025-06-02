@@ -22,6 +22,11 @@ exports.getUserById = async (req, res) => {
       id: user.id,
       name: user.name,
       email: user.email,
+      about: user.about,
+      instagram_url: user.instagram_url,
+      facebook_url: user.facebook_url,
+      twitter_url: user.twitter_url,
+      linkedin_url: user.linkedin_url,
       createdAt: user.created_at
     };
 
@@ -77,4 +82,4 @@ exports.deleteUser = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-};
+}

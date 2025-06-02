@@ -1,9 +1,18 @@
 const Feedback = require('../models/feedbackModel');
+const User = require('../models/userModel');
 
+
+// Buscar todos os feedbacks
 // Buscar todos os feedbacks
 exports.getAllFeedbacks = async (req, res) => {
   try {
-    const feedbacks = await Feedback.findAll();
+    const feedbacks = await Feedback.findAll({
+      include: [{
+        model: User,
+        as: 'user',
+        attributes: ['id', 'name', 'email']
+      }]
+    });
     res.json(feedbacks);
   } catch (err) {
     res.status(500).json({ error: 'Erro ao buscar feedbacks', details: err.message });
@@ -18,7 +27,14 @@ exports.getFeedbacksByEventId = async (req, res) => {
       return res.status(400).json({ message: 'ID do evento não fornecido' });
     }
 
-    const feedbacks = await Feedback.findAll({ where: { event_id: eventId } });
+    const feedbacks = await Feedback.findAll({ 
+      where: { event_id: eventId },
+      include: [{
+        model: User,
+        as: 'user',
+        attributes: ['id', 'name', 'email']
+      }]
+     });
 
     if (!feedbacks || feedbacks.length === 0) {
       return res.status(404).json({ message: 'Nenhum feedback encontrado para este evento', feedbacks: [] });

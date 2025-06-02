@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const User = require('./userModel');
 
 const Feedback = sequelize.define('Feedback', {
   id: {
@@ -54,3 +55,23 @@ const Feedback = sequelize.define('Feedback', {
 });
 
 module.exports = Feedback;
+
+Feedback.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user'
+});
+
+Feedback.getAll = async () => {
+  try {
+    const feedbacks = await Feedback.findAll({
+      include: [{
+        model: User,
+        as: 'user',
+        attributes: ['id', 'name', 'email'] // Especifique os campos do usuário que você quer incluir
+      }]
+    });
+    return feedbacks;
+  } catch (err) {
+    throw err;
+  }
+};

@@ -1,4 +1,10 @@
 const Reservation = require('../models/reservationModel');
+const User = require('../models/userModel');
+
+Reservation.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user'
+});
 
 exports.getReservations = async (req, res) => {
   try {
@@ -140,6 +146,8 @@ exports.getReservationsByEventId = async (req, res) => {
   try {
     const { event_id } = req.params;
     const reservations = await Reservation.findByEventId(event_id);
+
+    console.log('Reservations found:', reservations);
     res.json(reservations);
   } catch (err) {
     res.status(500).json({ 
@@ -165,6 +173,62 @@ exports.updateReservationStatus = async (req, res) => {
     res.status(500).json({ 
       error: 'Erro ao atualizar status da reserva',
       details: err.message 
+    });
+  }
+};
+
+exports.validateTicket = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Verifica se a reserva existe
+    const reservation = await Reservation.findByPk(id);
+    
+    if (!reservation) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Reserva não encontrada' 
+      });
+    }
+
+    // 2. Verifica se já foi validada
+    if (reservation.status === 'validated') {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Esta reserva já foi validada' 
+      });
+    }
+
+    // 3. Atualiza o status
+    const [affectedRows] = await Reservation.update(
+      { status: 'validated', validated_at: new Date() },
+      { where: { id } }
+    );
+
+    if (affectedRows === 0) {
+      return res.status(500).json({ 
+        success: false,
+        message: 'Falha ao atualizar a reserva' 
+      });
+    }
+
+    // 4. Retorna a reserva atualizada
+    const updatedReservation = await Reservation.findByPk(id, {
+      include: [{ model: User, as: 'user' }]
+    });
+
+    res.json({ 
+      success: true,
+      message: 'Reserva validada com sucesso',
+      reservation: updatedReservation
+    });
+
+  } catch (err) {
+    console.error('Erro ao validar reserva:', err);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erro interno ao validar reserva',
+      error: err.message 
     });
   }
 };

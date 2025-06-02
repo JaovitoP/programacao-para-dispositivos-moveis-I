@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-
+const User = require('./userModel');
 const Reservation = sequelize.define('Reservation', {
   id: {
     type: DataTypes.INTEGER,
@@ -63,7 +63,13 @@ const Reservation = sequelize.define('Reservation', {
 
 Reservation.getAll = async () => {
   try {
-    const reservations = await Reservation.findAll();
+    const reservations = await Reservation.findAll({
+      include: [{
+        model: require('./userModel'),
+        as: 'user',
+        attributes: ['id', 'name', 'email']
+      }]
+    });
     return reservations;
   } catch (err) {
     throw err;
@@ -125,13 +131,19 @@ Reservation.findByUserId = async (userId) => {
 Reservation.findByEventId = async (eventId) => {
   try {
     const reservations = await Reservation.findAll({
-      where: { event_id: eventId }
+      where: { event_id: eventId },
+      include: [{
+        model: require('./userModel'),
+        as: 'user',
+        attributes: ['id', 'name', 'email', 'cpf']
+      }]
     });
     return reservations;
   } catch (err) {
     throw err;
   }
 };
+
 
 Reservation.updateStatus = async (id, status) => {
   try {
