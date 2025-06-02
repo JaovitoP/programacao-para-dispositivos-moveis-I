@@ -1,20 +1,68 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Calendar, Clock, MapPin, Image as ImageIcon, Tag, Palette } from 'lucide-react-native';
+import { Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import api from '@/app/api/client';
+import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from '@/context/AuthContext';
+import { t } from 'i18next';
 
 export default function CreateEventScreen() {
+  const { authState } = useAuth();
+    useEffect(() => {
+      if (authState?.authenticated && authState.user) {
+        console.log('ID do usuário:', authState.user.id);
+        console.log('Dados completos do usuário:', authState.user);
+      }
+    }, [authState]);
+    
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    date: '',       // AAAA-MM-DD
-    time: '',       // HH:MM
+    date: '',
+    time: '',
     location: '',
     category: '',
-    color: '#f3f4f6', // Cor padrão
+    color: '#f3f4f6',
+    image: null as string | null,
+    producer_id: '',
+    ticket: { 
+      type: 'Gratuito',
+      amount: 0, 
+      price: 0 
+    },
   });
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permissão necessária', 'Precisamos da permissão para acessar suas fotos!');
+      return;
+    }
+  
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+  
+    if (!result.canceled && result.assets) {
+      setFormData({ ...formData, image: result.assets[0].uri });
+    }
+  };
+
+  const handleTicketChange = (field: string, value: string) => {
+    setFormData({ 
+      ...formData, 
+      ticket: { 
+        ...formData.ticket, 
+        [field]: field === 'price' || field === 'amount' ? Number(value) || 0 : value 
+      } 
+    });
+  };
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const colors = [
@@ -36,33 +84,61 @@ export default function CreateEventScreen() {
       Alert.alert('Erro', 'Preencha pelo menos nome, data e hora do evento');
       return;
     }
-
-    if (!validateDateTime(formData.date, formData.time)) {
-      Alert.alert('Erro', 'Formato inválido para data (AAAA-MM-DD) ou hora (HH:MM)');
+  
+    if (formData.ticket.price && !/^\d+(\.\d{1,2})?$/.test(formData.ticket.price.toString())) {
+      Alert.alert('Erro', 'Formato de preço inválido. Use números com até 2 casas decimais.');
       return;
     }
-
+  
     try {
       setIsSubmitting(true);
-      
-      const eventData = {
-        name: formData.name,
-        description: formData.description || null,
-        date: `${formData.date}`,
-        time: `${formData.time}`,
-        location: formData.location || null,
-        category: formData.category || null,
-        color: formData.color,
-        status: "active"
-      };
-
-      console.log(eventData);
-      const response = await api.createEvent(eventData);
-      
-      if (response.status === 201) {
-        Alert.alert('Sucesso', 'Evento criado com sucesso!');
-        router.back();
+  
+      const formDataToSend = new FormData();
+  
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description || '');
+      formDataToSend.append('date', formData.date);
+      formDataToSend.append('time', formData.time);
+      formDataToSend.append('location', formData.location || '');
+      formDataToSend.append('category', formData.category || '');
+      formDataToSend.append('color', formData.color);
+      formDataToSend.append('status', 'active');
+      formDataToSend.append('producer_id', authState.user.id);
+  
+      if (formData.image) {
+        const localUri = formData.image;
+        const filename = localUri.split('/').pop() || 'image.jpg';
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : 'image/jpeg';
+        
+        formDataToSend.append('image', {
+          uri: localUri,
+          name: filename,
+          type,
+        } as any);
       }
+  
+      const eventResponse = await api.createEvent(formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
+      const eventId = eventResponse.data.id;
+  
+      const ticketData = {
+        type: 'Gratuito',
+        status: 'active',
+        amount: Number(formData.ticket.amount) || 0,
+        price: 0,
+        event_id: eventId,
+      };
+  
+      await api.createTicket(eventId, ticketData);
+  
+      Alert.alert('Sucesso', 'Evento criado com sucesso!');
+      router.back();
+      
     } catch (error) {
       console.error('Erro ao criar evento:', error);
       Alert.alert('Erro', 'Não foi possível criar o evento');
@@ -76,10 +152,24 @@ export default function CreateEventScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Criar Evento</Text>
       </View>
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>Imagem do Evento</Text>
+        
+        <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+          {formData.image ? (
+            <Image source={{ uri: formData.image }} style={styles.imagePreview} />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <ImageIcon size={24} color="#6b7280" />
+              <Text style={styles.imagePlaceholderText}>Selecione uma imagem</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.form}>
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Nome do Evento*</Text>
+          <Text style={styles.label}>{t('Nome do Evento')}*</Text>
           <TextInput
             style={styles.input}
             value={formData.name}
@@ -90,34 +180,34 @@ export default function CreateEventScreen() {
 
         <View style={styles.row}>
           <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-            <Text style={styles.label}>Data*</Text>
+            <Text style={styles.label}>{t('Data')}*</Text>
             <View style={styles.iconInput}>
               <Calendar size={20} color="#6b7280" />
               <TextInput
                 style={styles.iconInputText}
                 value={formData.date}
                 onChangeText={(text) => setFormData({ ...formData, date: text })}
-                placeholder="AAAA-MM-DD"
+                placeholder="2025-01-01"
               />
             </View>
           </View>
 
           <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-            <Text style={styles.label}>Hora*</Text>
+            <Text style={styles.label}>{t('Hora')}*</Text>
             <View style={styles.iconInput}>
               <Clock size={20} color="#6b7280" />
               <TextInput
                 style={styles.iconInputText}
                 value={formData.time}
                 onChangeText={(text) => setFormData({ ...formData, time: text })}
-                placeholder="HH:MM"
+                placeholder="10:00"
               />
             </View>
           </View>
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Localização</Text>
+          <Text style={styles.label}>{t('Localização')}</Text>
           <View style={styles.iconInput}>
             <MapPin size={20} color="#6b7280" />
             <TextInput
@@ -130,7 +220,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Categoria</Text>
+          <Text style={styles.label}>{t('Categoria')}</Text>
           <View style={styles.iconInput}>
             <Tag size={20} color="#6b7280" />
             <TextInput
@@ -143,7 +233,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Cor do Evento</Text>
+          <Text style={styles.label}>{t('Cor do Evento')}</Text>
           <View style={styles.iconInput}>
             <Palette size={20} color="#6b7280" />
             <TextInput
@@ -167,7 +257,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Descrição</Text>
+          <Text style={styles.label}>{t('Descrição')}</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
             value={formData.description}
@@ -179,8 +269,24 @@ export default function CreateEventScreen() {
           />
         </View>
 
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>{t('Quantidade de ingressos')}</Text>
+          
+          <View style={styles.priceRow}>
+            <View style={[styles.iconInput, { flex: 1 }]}>
+              <TextInput
+                style={styles.iconInputText}
+                value={formData.ticket.amount.toString()}
+                onChangeText={(text) => handleTicketChange('amount', text)}
+                placeholder="Quantidade"
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+        </View>
+
         <TouchableOpacity 
-          style={[styles.submitButton, { backgroundColor: formData.color }, isSubmitting && styles.submitButtonDisabled]} 
+          style={[styles.submitButton, { backgroundColor: '#6366f1' }, isSubmitting && styles.submitButtonDisabled]} 
           onPress={handleSubmit}
           disabled={isSubmitting}
         >
@@ -266,7 +372,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 16,
   },
-
   colorOptions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -278,5 +383,44 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginRight: 8,
     marginBottom: 8,
+  },
+  priceRow: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  priceInput: {
+    flex: 1,
+    marginLeft: 4,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 16,
+  },
+  currencySymbol: {
+    fontFamily: 'Inter_500Medium',
+    color: '#6b7280',
+  },
+  imagePicker: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  imagePreview: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  imagePlaceholderText: {
+    marginTop: 8,
+    color: '#6b7280',
+    fontFamily: 'Inter_400Regular',
   },
 });

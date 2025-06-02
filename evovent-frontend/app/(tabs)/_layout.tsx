@@ -1,53 +1,74 @@
-import { Tabs } from 'expo-router';
-import { Calendar, Home, PlusCircle, User, PartyPopper } from 'lucide-react-native'; // Importando o ícone PartyPopper
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { Button, ActivityIndicator, View } from 'react-native';
+import HomeScreen from './index';
+import LoginScreen from './login';
+import RegisterScreen from './register';
+import DetailsScreen from './[id]';
+import CalendarScreen from './calendar';
+import CreateScreen from './create';
+import ProfileScreen from './profile';
+import MyReservationsScreen from './myReservations';
+import MyEventsScreen from './myEvents';
+import DashboardScreen from './dashboard';
+import ParticipantsScreen from './participants';
+import Tabs from '../components/tabs';
 
-export default function TabLayout() {
+const Stack = createNativeStackNavigator();
+
+export default function App() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopColor: '#e5e5e5',
-        },
-        tabBarActiveTintColor: '#6366f1',
-        tabBarInactiveTintColor: '#6b7280',
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
-        }}
-      />
-        <Tabs.Screen
-          name="[id]"
-          options={{
-            title: 'Evento',
-            tabBarIcon: ({ color, size }) => <PartyPopper size={size} color={color} />, // Usando PartyPopper para evento
-          }}
-        />
-      <Tabs.Screen
-        name="calendar"
-        options={{
-          title: 'Calendar',
-          tabBarIcon: ({ color, size }) => <Calendar size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="create"
-        options={{
-          title: 'Create',
-          tabBarIcon: ({ color, size }) => <PlusCircle size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
-        }}
-      />
-    </Tabs>
+    <AuthProvider>
+      <AppNavigation />
+    </AuthProvider>
+  );
+}
+
+function AppNavigation() {
+  const { authState, onLogout } = useAuth();
+
+  return (
+      <Stack.Navigator>
+        {authState?.authenticated ? (
+          <>
+          <Stack.Screen name="MainTabs" component={Tabs} options={{ headerShown: false }} />
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={{
+                headerShown: false
+              }}
+            />
+            <Stack.Screen name="Details" component={DetailsScreen} options={{
+            title: "Detalhes do evento",
+          }}/>
+            <Stack.Screen name="Calendar" component={CalendarScreen} />
+            <Stack.Screen name="Create" component={CreateScreen} options={{ title: "Novo evento" }}/>
+            <Stack.Screen name="Profile" component={ProfileScreen} />
+            <Stack.Screen name="MyReservations" component={MyReservationsScreen} options={{
+            title: "Reservas feitas",
+          }}/>
+          <Stack.Screen name="MyEvents" component={MyEventsScreen} options={{
+            title: "Meus Eventos",
+          }}/>
+          <Stack.Screen name="Dashboard" component={DashboardScreen} options={{
+            title: "Dashboard",
+          }}/>
+          <Stack.Screen name="Participants" component={ParticipantsScreen} options={{
+            title: "Registro de Participantes",
+          }}/>
+          </>
+        ) : (
+          <>
+          <Stack.Screen name="Login" component={LoginScreen} options={{
+            headerShown: false
+          }} />
+          <Stack.Screen name="Register" component={RegisterScreen} options={{
+            headerShown: false
+          }} />
+          </>
+        )}
+      </Stack.Navigator>
   );
 }
