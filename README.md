@@ -13,12 +13,12 @@ O Evovent consiste em uma aplicação mobile para gerenciamento de diferentes ti
 ## 📅Sprints 
 
 ### Sprint - 1️⃣ 🎯 ([Clique aqui](https://github.com/JaovitoP/programacao-para-dispositivos-moveis-I/tree/sprint-1)) Concluída ☑️
-### Sprint - 2️⃣ 🎯  Em andamento 🚧
-### Sprint - 3️⃣ 🎯  Em andamento 🚧
+### Sprint - 2️⃣ 🎯 ([Clique aqui](https://github.com/JaovitoP/programacao-para-dispositivos-moveis-I/tree/sprint-2)) Concluída ☑️
+### Sprint - 3️⃣ 🎯 ([Clique aqui](https://github.com/JaovitoP/programacao-para-dispositivos-moveis-I/tree/sprint-3)) Concluída ☑️
 
 ## Minimum Viable Product
 
-![MVP](https://github.com/user-attachments/assets/baeeded6-fb4d-453e-9b7a-f0893ed43d3a)
+![MVP](https://github.com/user-attachments/assets/f2def46f-f7e5-4c1c-a1f2-92b448d4e9d9)
 
 
 ## Product Backlog
