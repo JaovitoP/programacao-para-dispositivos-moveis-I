@@ -12,7 +12,7 @@ O Evovent consiste em uma aplicação mobile para gerenciamento de diferentes ti
 
 ## MVP da Sprint
 
-![MVP (3) - Copia](https://github.com/user-attachments/assets/e8f2c731-fcc0-4b5f-b036-893ba0b3d6e1)
+![MVP (3)](https://github.com/user-attachments/assets/2b31f188-9c44-497b-a769-05e8a0b88c80)
 
 
 ## Product Backlog
