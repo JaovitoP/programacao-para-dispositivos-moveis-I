@@ -21,7 +21,8 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const API_BASE_URL = 'http://192.168.15.7:5000/api';
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
   useEffect(() => {
     if (authState?.authenticated && authState.user) {
       console.log('ID do usuário:', authState.user.id);
@@ -52,7 +53,7 @@ export default function HomeScreen() {
         date: new Date(event.date),
         location: event.location,
         image: event.image 
-        ? `http://192.168.15.7:5000${event.image}` 
+        ? `${process.env.EXPO_PUBLIC_API_IMG_URL}${event.image}` 
         : mockImages[index % mockImages.length],
       }));
       

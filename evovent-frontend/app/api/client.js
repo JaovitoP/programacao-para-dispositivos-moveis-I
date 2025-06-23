@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: 'http://192.168.15.7:5000/api',
+  baseURL: process.env.EXPO_PUBLIC_API_URL,
 });
 api.interceptors.request.use((config) => {
   if (config.data instanceof FormData) {

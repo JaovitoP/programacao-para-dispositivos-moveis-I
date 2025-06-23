@@ -10,7 +10,7 @@ import CalendarScreen from './calendar';
 import CreateScreen from './create';
 import ProfileScreen from './profile';
 import MyReservationsScreen from './myReservations';
-import MyEventsScreen from './myEvents';
+import MyEventsScreen from './myevents';
 import DashboardScreen from './dashboard';
 import ParticipantsScreen from './participants';
 import Tabs from '../components/tabs';

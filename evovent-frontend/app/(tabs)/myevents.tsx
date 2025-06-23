@@ -79,7 +79,7 @@ export default function MyEventsScreen() {
           {/* Adicione a Image aqui */}
           {event.image && (
             <Image 
-              source={{ uri: `http://192.168.15.7:5000${event.image}` }}
+              source={{ uri: `${process.env.EXPO_PUBLIC_API_IMG_URL}${event.image}` }}
               style={styles.eventImage}
               onError={(e) => console.log('Erro ao carregar imagem:', e.nativeEvent.error)}
             />

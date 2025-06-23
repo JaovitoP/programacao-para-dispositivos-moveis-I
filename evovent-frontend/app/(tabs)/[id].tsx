@@ -293,7 +293,7 @@ const openReservationModal = (ticket: Ticket) => {
   return (
     <ScrollView style={[styles.container, { backgroundColor: event.color || '#f3f4f6' }]}>
       <Image 
-        source={{ uri: `http://192.168.15.7:5000${event.image}` }} 
+        source={{ uri: `${process.env.EXPO_PUBLIC_API_IMG_URL}${event.image}` }} 
         style={styles.coverImage} 
       />
       <TouchableOpacity onPress={handleShare} style={styles.shareButton}>

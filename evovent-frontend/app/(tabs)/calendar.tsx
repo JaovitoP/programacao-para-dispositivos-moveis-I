@@ -108,7 +108,7 @@ export default function CalendarScreen() {
           .map((event) => (
             <View key={event.id} style={styles.eventItem}>
               <Image 
-                source={{ uri: event.image.startsWith('http') ? event.image : `http://192.168.15.7:5000${event.image}` }}
+                source={{ uri: event.image.startsWith('http') ? event.image : `${process.env.EXPO_PUBLIC_API_URL}${event.image}` }}
                 style={styles.eventImage}
                 resizeMode="cover"
               />
@@ -131,7 +131,7 @@ export default function CalendarScreen() {
             selectedEvents.map(event => (
               <View key={event.id} style={styles.modalItem}>
                 <Image 
-                  source={{ uri: event.image.startsWith('http') ? event.image : `http://192.168.15.7:5000${event.image}` }}
+                  source={{ uri: event.image.startsWith('http') ? event.image : `${process.env.EXPO_PUBLIC_API_URL}${event.image}` }}
                   style={styles.modalImage}
                   resizeMode="cover"
                 />

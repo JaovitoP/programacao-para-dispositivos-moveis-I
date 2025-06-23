@@ -1,3 +1,4 @@
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const express = require('express');
 const path = require('path');
 
@@ -12,7 +13,6 @@ const reservationRoutes = require('./routes/reservations');
 const feedbackRoutes = require('./routes/feedbacks');
 const authRoutes = require('./routes/auth');
 
-require('dotenv').config();
 const app = express();
 
 app.use(bodyParser.json());
